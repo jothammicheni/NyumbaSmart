@@ -1,4 +1,5 @@
 import type React from "react"
+import { Link } from "react-router-dom"
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react"
 
 const Footer: React.FC = () => {
@@ -33,34 +34,34 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link to="/" className="text-gray-300 hover:text-primary-400 transition duration-300">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link to="/properties" className="text-gray-300 hover:text-primary-400 transition duration-300">
                   Property Listing
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link to="/about" className="text-gray-300 hover:text-primary-400 transition duration-300">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link to="/contact" className="text-gray-300 hover:text-primary-400 transition duration-300">
                   Contact
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link to="/privacy" className="text-gray-300 hover:text-primary-400 transition duration-300">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link to="/terms" className="text-gray-300 hover:text-primary-400 transition duration-300">
                   Terms of Service
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -70,29 +71,44 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Our Services</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link
+                  to="/services/property-management"
+                  className="text-gray-300 hover:text-primary-400 transition duration-300"
+                >
                   Property Management
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link
+                  to="/services/rent-collection"
+                  className="text-gray-300 hover:text-primary-400 transition duration-300"
+                >
                   Rent Collection
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link
+                  to="/services/maintenance"
+                  className="text-gray-300 hover:text-primary-400 transition duration-300"
+                >
                   Maintenance Tracking
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link
+                  to="/services/tenant-portal"
+                  className="text-gray-300 hover:text-primary-400 transition duration-300"
+                >
                   Tenant Portal
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-primary-400 transition duration-300">
+                <Link
+                  to="/services/agent-referrals"
+                  className="text-gray-300 hover:text-primary-400 transition duration-300"
+                >
                   Agent Referrals
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

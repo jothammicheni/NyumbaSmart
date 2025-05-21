@@ -1,5 +1,6 @@
 import type React from "react"
-import { Building, CreditCard, Users, Shield } from "lucide-react"
+import { Link } from "react-router-dom"
+import { Building, CreditCard, Users, Shield, Wifi, Wrench, Zap } from "lucide-react"
 
 const CTASection: React.FC = () => {
   return (
@@ -55,18 +56,64 @@ const CTASection: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Agent Referrals</h3>
             <p className="text-gray-600 dark:text-gray-300 text-center">
-              Earn recurring income through our <strong>digital share system</strong>.
+              Earn recurring income by referring landlords to our platform.
+            </p>
+          </div>
+        </div>
+
+        {/* Service Providers Section */}
+        <div className="mt-16 mb-8 text-center">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Connect with Service Providers</h3>
+          <p className="max-w-2xl text-lg text-gray-600 dark:text-gray-300 mx-auto mb-8">
+            Access trusted service providers directly through our platform
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {/* WiFi Provider */}
+          <div className="bg-white dark:bg-gray-700 rounded-lg shadow-lg p-6 transform transition duration-500 hover:scale-105 border border-gray-100 dark:border-gray-600">
+            <div className="flex justify-center mb-4">
+              <Wifi className="h-12 w-12 text-primary-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">WiFi Providers</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-center">
+              Connect with reliable internet service providers for your property. Manage subscriptions and resolve
+              connectivity issues.
+            </p>
+          </div>
+
+          {/* Plumbing Services */}
+          <div className="bg-white dark:bg-gray-700 rounded-lg shadow-lg p-6 transform transition duration-500 hover:scale-105 border border-gray-100 dark:border-gray-600">
+            <div className="flex justify-center mb-4">
+              <Wrench className="h-12 w-12 text-primary-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Plumbing Services</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-center">
+              Quick access to professional plumbers for maintenance and emergency repairs. Schedule appointments and
+              track service history.
+            </p>
+          </div>
+
+          {/* Electrical Services */}
+          <div className="bg-white dark:bg-gray-700 rounded-lg shadow-lg p-6 transform transition duration-500 hover:scale-105 border border-gray-100 dark:border-gray-600">
+            <div className="flex justify-center mb-4">
+              <Zap className="h-12 w-12 text-primary-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Electrical Services</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-center">
+              Connect with certified electricians for installations, repairs, and maintenance. Ensure safety and
+              compliance with regulations.
             </p>
           </div>
         </div>
 
         <div className="mt-16 text-center">
-          <a
-            href="#"
+          <Link
+            to="/register"
             className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 md:py-4 md:text-lg md:px-10 transition duration-300"
           >
-            Start Managing Your Rental Properties
-          </a>
+            Start Managing Your Properties
+          </Link>
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import type React from "react"
+import { Link } from "react-router-dom"
 import { Building, Users, UserPlus } from "lucide-react"
 
 const Hero: React.FC = () => {
@@ -27,28 +28,28 @@ const Hero: React.FC = () => {
               all-in-one platform.
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-              <a
-                href="#"
+              <Link
+                to="/register"
                 className="px-8 py-3 text-base font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 md:py-4 md:text-lg md:px-10 transition duration-300"
               >
-                Get Started For Free!
-              </a>
-              <a
-                href="#"
+                Get Started
+              </Link>
+              <Link
+                to="/about"
                 className="px-8 py-3 text-base font-medium rounded-md text-primary-500 bg-white hover:bg-gray-100 md:py-4 md:text-lg md:px-10 transition duration-300"
               >
                 Learn More
-              </a>
+              </Link>
             </div>
           </div>
 
           {/* Right side - User role options */}
           <div className="hidden lg:flex flex-col gap-6">
-            <div className="text-center text-white text-2xl font-bold mb-2">Join Us As For Free</div>
+            <div className="text-center text-white text-2xl font-bold mb-2">Join Us As</div>
             <div className="grid grid-cols-1 gap-6">
               {/* Landlord Card */}
-              <a
-                href="#"
+              <Link
+                to="/register?role=landlord"
                 className="bg-white bg-opacity-10 backdrop-blur-sm hover:bg-opacity-20 p-6 rounded-xl border border-white border-opacity-20 transform transition-all duration-300 hover:scale-105 group"
               >
                 <div className="flex items-center">
@@ -62,11 +63,11 @@ const Hero: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </a>
+              </Link>
 
               {/* Tenant Card */}
-              <a
-                href="#"
+              <Link
+                to="/register?role=tenant"
                 className="bg-white bg-opacity-10 backdrop-blur-sm hover:bg-opacity-20 p-6 rounded-xl border border-white border-opacity-20 transform transition-all duration-300 hover:scale-105 group"
               >
                 <div className="flex items-center">
@@ -80,11 +81,11 @@ const Hero: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </a>
+              </Link>
 
               {/* Agent Card */}
-              <a
-                href="#"
+              <Link
+                to="/register?role=agent"
                 className="bg-white bg-opacity-10 backdrop-blur-sm hover:bg-opacity-20 p-6 rounded-xl border border-white border-opacity-20 transform transition-all duration-300 hover:scale-105 group"
               >
                 <div className="flex items-center">
@@ -96,7 +97,7 @@ const Hero: React.FC = () => {
                     <p className="text-gray-200">Refer landlords and earn recurring income through our platform</p>
                   </div>
                 </div>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
