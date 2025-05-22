@@ -1,83 +1,97 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
 import {
   Home,
   Users,
-  DollarSign,
+  Building,
+  CreditCard,
   Settings,
   Bell,
   Search,
   Menu,
   X,
   LogOut,
-  UserPlus,
-  TrendingUp,
+  DollarSign,
   Percent,
-  Share2,
-  Copy,
-  CheckCircle,
+  Calendar,
+  AlertTriangle,
+  Wrench,
+  Plus,
 } from "lucide-react"
-import { useTheme } from "../components/ThemeProvider"
-import { logoutUser } from "../services/authService"
+import { useTheme } from "../../../components/ThemeProvider"
+import { useAuth } from "../../../context/AuthContext"
+import { useNavigate } from "react-router-dom"
+import { getPropertyStats } from "../../../services/propertyService"
 
-// Dummy data for the dashboard
-const agentInfo = {
-  name: "Sarah Johnson",
-  referralCode: "SARAH123",
-  totalReferrals: 12,
-  activeReferrals: 8,
-  totalEarnings: 45000,
-  pendingPayouts: 15000,
-  walletBalance: 5000,
-}
-
-const referralHistory = [
+// Dummy data for recent activities and upcoming payments
+// In a real app, these would come from API calls
+const recentActivities = [
+  { id: 1, type: "payment", user: "John Doe", amount: 25000, date: "2023-05-18", status: "completed" },
+  { id: 2, type: "maintenance", user: "Sarah Smith", issue: "Plumbing issue", date: "2023-05-17", status: "pending" },
+  { id: 3, type: "lease", user: "Michael Johnson", property: "Apartment 4B", date: "2023-05-16", status: "completed" },
+  { id: 4, type: "payment", user: "Emily Brown", amount: 30000, date: "2023-05-15", status: "completed" },
   {
-    id: 1,
-    landlord: "John Doe",
-    property: "Sunshine Apartments",
-    date: "2023-05-10",
-    status: "active",
-    commission: 5000,
-  },
-  {
-    id: 2,
-    landlord: "Mary Smith",
-    property: "Green Valley Residences",
-    date: "2023-04-15",
-    status: "active",
-    commission: 6000,
-  },
-  {
-    id: 3,
-    landlord: "Robert Johnson",
-    property: "Riverside Homes",
-    date: "2023-03-20",
-    status: "active",
-    commission: 4500,
-  },
-  {
-    id: 4,
-    landlord: "Emily Brown",
-    property: "Mountain View Apartments",
-    date: "2023-02-25",
-    status: "inactive",
-    commission: 0,
+    id: 5,
+    type: "maintenance",
+    user: "David Wilson",
+    issue: "Electrical issue",
+    date: "2023-05-14",
+    status: "in-progress",
   },
 ]
 
-const payoutHistory = [
-  { id: 1, date: "2023-05-01", amount: 10000, method: "M-Pesa", reference: "PO123456789" },
-  { id: 2, date: "2023-04-01", amount: 12000, method: "M-Pesa", reference: "PO987654321" },
-  { id: 3, date: "2023-03-01", amount: 8000, method: "M-Pesa", reference: "PO456789123" },
+const upcomingPayments = [
+  { id: 1, tenant: "Alice Johnson", property: "Apartment 2A", amount: 25000, dueDate: "2023-05-25" },
+  { id: 2, tenant: "Robert Smith", property: "Apartment 3C", amount: 30000, dueDate: "2023-05-26" },
+  { id: 3, tenant: "Mary Davis", property: "Apartment 1B", amount: 22000, dueDate: "2023-05-28" },
+  { id: 4, tenant: "James Wilson", property: "Apartment 5D", amount: 28000, dueDate: "2023-05-30" },
 ]
 
-const AgentDashboard: React.FC = () => {
+const LandlordDashboard: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [showCopiedMessage, setShowCopiedMessage] = useState(false)
+
+  const [propertyStats, setPropertyStats] = useState({
+    totalProperties: 0,
+    totalRooms: 0,
+    occupiedRooms: 0,
+    vacantRooms: 0,
+    maintenanceRooms: 0,
+    occupancyRate: 0,
+  })
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  // Financial stats - in a real app, this would come from an API call
+  const financialStats = {
+    totalRevenue: 1250000,
+    paidRent: 950000,
+    pendingRent: 300000,
+  }
+
+  useEffect(() => {
+    fetchPropertyStats()
+  }, [])
+
+  const fetchPropertyStats = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const response = await getPropertyStats()
+      console.log(response.data)
+      setPropertyStats(response.data)
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to fetch property statistics")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -88,22 +102,9 @@ const AgentDashboard: React.FC = () => {
     }).format(amount)
   }
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
-
-  // Copy referral code to clipboard
-  const copyReferralCode = () => {
-    navigator.clipboard.writeText(agentInfo.referralCode)
-    setShowCopiedMessage(true)
-    setTimeout(() => {
-      setShowCopiedMessage(false)
-    }, 2000)
+  const handleLogout = async () => {
+    await logout()
+    navigate("/login")
   }
 
   return (
@@ -125,44 +126,51 @@ const AgentDashboard: React.FC = () => {
           </div>
           <div className="flex-1 overflow-y-auto">
             <nav className="px-2 py-4 space-y-1">
-              <a
-                href="#"
+              <Link
+                to="/landlord/dashboard"
                 className="flex items-center px-3 py-2 text-sm font-medium text-white bg-primary-600 rounded-md"
               >
                 <Home className="w-5 h-5 mr-3" />
                 Dashboard
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/landlord/properties"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <UserPlus className="w-5 h-5 mr-3" />
-                Referrals
-              </a>
-              <a
-                href="#"
+                <Building className="w-5 h-5 mr-3" />
+                Properties
+              </Link>
+              <Link
+                to="/landlord/tenants"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <DollarSign className="w-5 h-5 mr-3" />
-                Earnings
-              </a>
-              <a
-                href="#"
+                <Users className="w-5 h-5 mr-3" />
+                Tenants
+              </Link>
+              <Link
+                to="/landlord/payments"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+              >
+                <CreditCard className="w-5 h-5 mr-3" />
+                Payments
+              </Link>
+              <Link
+                to="/landlord/settings"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
                 <Settings className="w-5 h-5 mr-3" />
                 Settings
-              </a>
+              </Link>
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <a
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500"
             >
               <LogOut className="w-5 h-5 mr-3" />
               Sign out
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -175,45 +183,51 @@ const AgentDashboard: React.FC = () => {
           </div>
           <div className="flex flex-col flex-1 overflow-y-auto">
             <nav className="flex-1 px-2 py-4 space-y-1">
-              <a
-                href="#"
+              <Link
+                to="/landlord/dashboard"
                 className="flex items-center px-3 py-2 text-sm font-medium text-white bg-primary-600 rounded-md"
               >
                 <Home className="w-5 h-5 mr-3" />
                 Dashboard
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/landlord/properties"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <UserPlus className="w-5 h-5 mr-3" />
-                Referrals
-              </a>
-              <a
-                href="#"
+                <Building className="w-5 h-5 mr-3" />
+                Properties
+              </Link>
+              <Link
+                to="/landlord/tenants"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <DollarSign className="w-5 h-5 mr-3" />
-                Earnings
-              </a>
-              <a
-                href="#"
+                <Users className="w-5 h-5 mr-3" />
+                Tenants
+              </Link>
+              <Link
+                to="/landlord/payments"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+              >
+                <CreditCard className="w-5 h-5 mr-3" />
+                Payments
+              </Link>
+              <Link
+                to="/landlord/settings"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
                 <Settings className="w-5 h-5 mr-3" />
                 Settings
-              </a>
+              </Link>
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <a
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500"
-              onClick={()=>logoutUser()}
-          >
+            >
               <LogOut className="w-5 h-5 mr-3" />
               Sign out
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -302,7 +316,7 @@ const AgentDashboard: React.FC = () => {
                     <span className="sr-only">Open user menu</span>
                     <img
                       className="h-8 w-8 rounded-full"
-                      src="https://randomuser.me/api/portraits/women/44.jpg"
+                      src="https://randomuser.me/api/portraits/men/1.jpg"
                       alt="User profile"
                     />
                   </button>
@@ -319,18 +333,23 @@ const AgentDashboard: React.FC = () => {
               <div className="py-6 md:flex md:items-center md:justify-between">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
-                    Welcome, {agentInfo.name}
+                    Landlord Dashboard
                   </h2>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Agent Dashboard</p>
                 </div>
                 <div className="mt-4 flex md:mt-0 md:ml-4">
                   <button
                     type="button"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    Export
+                  </button>
+                  <Link
+                    to="/landlord/properties"
                     className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                   >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Referral Link
-                  </button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Property
+                  </Link>
                 </div>
               </div>
             </div>
@@ -338,57 +357,24 @@ const AgentDashboard: React.FC = () => {
 
           <div className="mt-8">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* Referral Code Card */}
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
-                <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                    Your Referral Code
-                  </h3>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md flex items-center justify-between">
-                    <div className="text-xl font-mono font-medium text-primary-600 dark:text-primary-400">
-                      {agentInfo.referralCode}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={copyReferralCode}
-                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                    >
-                      {showCopiedMessage ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy Code
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Share this code with landlords to earn commission when they sign up.
-                  </p>
-                </div>
-              </div>
-
               {/* Stats cards */}
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Property Overview</h3>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Card 1 */}
                 <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <UserPlus className="h-6 w-6 text-primary-500" />
+                        <Building className="h-6 w-6 text-gray-400" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Total Referrals
+                            Total Properties
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {agentInfo.totalReferrals}
+                              {loading ? "..." : propertyStats.totalProperties}
                             </div>
                           </dd>
                         </dl>
@@ -402,16 +388,16 @@ const AgentDashboard: React.FC = () => {
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <Users className="h-6 w-6 text-primary-500" />
+                        <Users className="h-6 w-6 text-gray-400" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Active Referrals
+                            Occupied Units
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {agentInfo.activeReferrals}
+                              {loading ? "..." : propertyStats.occupiedRooms}
                             </div>
                           </dd>
                         </dl>
@@ -425,16 +411,16 @@ const AgentDashboard: React.FC = () => {
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <DollarSign className="h-6 w-6 text-primary-500" />
+                        <Home className="h-6 w-6 text-gray-400" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Total Earnings
+                            Vacant Units
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {formatCurrency(agentInfo.totalEarnings)}
+                              {loading ? "..." : propertyStats.vacantRooms}
                             </div>
                           </dd>
                         </dl>
@@ -448,16 +434,16 @@ const AgentDashboard: React.FC = () => {
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <TrendingUp className="h-6 w-6 text-primary-500" />
+                        <AlertTriangle className="h-6 w-6 text-gray-400" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Pending Payouts
+                            Maintenance Requests
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {formatCurrency(agentInfo.pendingPayouts)}
+                              {loading ? "..." : propertyStats.maintenanceRooms}
                             </div>
                           </dd>
                         </dl>
@@ -467,158 +453,214 @@ const AgentDashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Wallet Card */}
-              <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Your Wallet</h3>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {formatCurrency(agentInfo.walletBalance)}
-                    </span>
+              {/* Financial stats */}
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-8 mb-4">
+                Financial Overview
+              </h3>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Card 1 */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <DollarSign className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            Total Revenue
+                          </dt>
+                          <dd>
+                            <div className="text-lg font-medium text-gray-900 dark:text-white">
+                              {formatCurrency(financialStats.totalRevenue)}
+                            </div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-4">
-                    <button
-                      type="button"
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                    >
-                      Withdraw to M-Pesa
-                    </button>
+                </div>
+
+                {/* Card 2 */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <CreditCard className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Paid Rent</dt>
+                          <dd>
+                            <div className="text-lg font-medium text-gray-900 dark:text-white">
+                              {formatCurrency(financialStats.paidRent)}
+                            </div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 3 */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <AlertTriangle className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            Pending Rent
+                          </dt>
+                          <dd>
+                            <div className="text-lg font-medium text-gray-900 dark:text-white">
+                              {formatCurrency(financialStats.pendingRent)}
+                            </div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 4 */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <Percent className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            Occupancy Rate
+                          </dt>
+                          <dd>
+                            <div className="text-lg font-medium text-gray-900 dark:text-white">
+                              {loading ? "..." : propertyStats.occupancyRate}%
+                            </div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Referral History and Payout History */}
-              <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-                {/* Referral History */}
+              {/* Recent Activity and Upcoming Payments */}
+              <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+                {/* Recent Activity */}
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Referral History</h3>
-                    <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-500">
-                      View all
-                    </a>
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Recent Activity</h3>
                   </div>
                   <div className="px-4 py-5 sm:p-6">
                     <div className="flow-root">
                       <ul className="-my-5 divide-y divide-gray-200 dark:divide-gray-700">
-                        {referralHistory.map((referral) => (
-                          <li key={referral.id} className="py-4">
+                        {recentActivities.map((activity) => (
+                          <li key={activity.id} className="py-4">
                             <div className="flex items-center space-x-4">
                               <div className="flex-shrink-0">
-                                <div
-                                  className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                                    referral.status === "active"
-                                      ? "bg-green-100 dark:bg-green-900"
-                                      : "bg-gray-100 dark:bg-gray-700"
-                                  }`}
-                                >
-                                  <UserPlus
-                                    className={`h-5 w-5 ${
-                                      referral.status === "active"
-                                        ? "text-green-600 dark:text-green-400"
-                                        : "text-gray-500 dark:text-gray-400"
-                                    }`}
-                                  />
-                                </div>
+                                {activity.type === "payment" ? (
+                                  <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                    <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                  </div>
+                                ) : activity.type === "maintenance" ? (
+                                  <div className="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                                    <Wrench className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                  </div>
+                                ) : (
+                                  <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                    <Home className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                  </div>
+                                )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {referral.landlord}
+                                  {activity.user}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{referral.property}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                  {activity.type === "payment"
+                                    ? `Paid ${formatCurrency(activity.amount)}`
+                                    : activity.type === "maintenance"
+                                      ? `Reported: ${activity.issue}`
+                                      : `New lease: ${activity.property}`}
+                                </p>
                               </div>
-                              <div className="text-right">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {formatCurrency(referral.commission)}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(referral.date)}</p>
+                              <div>
+                                <div
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                  ${
+                                    activity.status === "completed"
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                      : activity.status === "pending"
+                                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                        : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                  }`}
+                                >
+                                  {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                                </div>
                               </div>
                             </div>
                           </li>
                         ))}
                       </ul>
                     </div>
+                    <div className="mt-6">
+                      <a
+                        href="#"
+                        className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      >
+                        View all
+                      </a>
+                    </div>
                   </div>
                 </div>
 
-                {/* Payout History */}
+                {/* Upcoming Payments */}
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Payout History</h3>
-                    <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-500">
-                      View all
-                    </a>
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Upcoming Payments</h3>
                   </div>
                   <div className="px-4 py-5 sm:p-6">
                     <div className="flow-root">
                       <ul className="-my-5 divide-y divide-gray-200 dark:divide-gray-700">
-                        {payoutHistory.map((payout) => (
-                          <li key={payout.id} className="py-4">
+                        {upcomingPayments.map((payment) => (
+                          <li key={payment.id} className="py-4">
                             <div className="flex items-center space-x-4">
                               <div className="flex-shrink-0">
                                 <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-                                  <DollarSign className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                                  <Calendar className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                                 </div>
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  Payout to {payout.method}
+                                  {payment.tenant}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Ref: {payout.reference}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{payment.property}</p>
                               </div>
                               <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {formatCurrency(payout.amount)}
+                                  {formatCurrency(payment.amount)}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(payout.date)}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  Due: {new Date(payment.dueDate).toLocaleDateString()}
+                                </p>
                               </div>
                             </div>
                           </li>
                         ))}
                       </ul>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Commission Structure */}
-              <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Commission Structure</h3>
-                </div>
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <div className="flex items-center justify-center mb-2">
-                        <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-                          <Percent className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-                        </div>
-                      </div>
-                      <h4 className="text-center text-lg font-medium text-gray-900 dark:text-white mb-1">5%</h4>
-                      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        Commission on first month's rent
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <div className="flex items-center justify-center mb-2">
-                        <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-                          <Percent className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-                        </div>
-                      </div>
-                      <h4 className="text-center text-lg font-medium text-gray-900 dark:text-white mb-1">2%</h4>
-                      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        Recurring commission on monthly rent
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <div className="flex items-center justify-center mb-2">
-                        <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-                          <TrendingUp className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-                        </div>
-                      </div>
-                      <h4 className="text-center text-lg font-medium text-gray-900 dark:text-white mb-1">KES 1,000</h4>
-                      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        Bonus for each new landlord referral
-                      </p>
+                    <div className="mt-6">
+                      <a
+                        href="#"
+                        className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      >
+                        View all
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -631,4 +673,4 @@ const AgentDashboard: React.FC = () => {
   )
 }
 
-export default AgentDashboard
+export default LandlordDashboard

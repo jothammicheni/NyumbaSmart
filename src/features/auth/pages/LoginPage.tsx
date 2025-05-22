@@ -3,8 +3,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react"
-import { useTheme } from "../components/ThemeProvider"
-import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../../../components/ThemeProvider"
+import { useAuth } from "../../../context/AuthContext"
 import { useNavigate } from "react-router-dom"
 
 interface FormData {
@@ -19,7 +19,7 @@ interface ValidationErrors {
   general?: string
 }
 
-const Login: React.FC = () => {
+const LoginPage: React.FC = () => {
   const { theme } = useTheme()
   const { login, isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -36,10 +36,24 @@ const Login: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/admin-panel")
-      } else {
-        navigate(`/${user.role}-dashboard`)
+      switch (user.role) {
+        case "admin":
+          navigate("/admin/dashboard")
+          break
+        case "landlord":
+          navigate("/landlord/dashboard")
+          break
+        case "tenant":
+          navigate("/tenant/dashboard")
+          break
+        case "agent":
+          navigate("/agent/dashboard")
+          break
+        case "service-provider":
+          navigate("/service-provider/dashboard")
+          break
+        default:
+          navigate("/")
       }
     }
   }, [isAuthenticated, user, navigate])
@@ -197,7 +211,7 @@ const Login: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                <a href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                   Forgot your password?
                 </a>
               </div>
@@ -229,4 +243,4 @@ const Login: React.FC = () => {
   )
 }
 
-export default Login
+export default LoginPage

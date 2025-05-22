@@ -3,8 +3,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Eye, EyeOff, CheckCircle, XCircle, Loader2 } from "lucide-react"
-import { useTheme } from "../components/ThemeProvider"
-import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../../../components/ThemeProvider"
+import { useAuth } from "../../../context/AuthContext"
 import { useNavigate } from "react-router-dom"
 
 type UserRole = "landlord" | "tenant" | "agent" | "service-provider"
@@ -37,7 +37,7 @@ interface ValidationErrors {
   general?: string
 }
 
-const Register: React.FC = () => {
+const RegisterPage: React.FC = () => {
   const { theme } = useTheme()
   const { register, isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -64,10 +64,24 @@ const Register: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/admin-panel")
-      } else {
-        navigate(`/${user.role}-dashboard`)
+      switch (user.role) {
+        case "admin":
+          navigate("/admin/dashboard")
+          break
+        case "landlord":
+          navigate("/landlord/dashboard")
+          break
+        case "tenant":
+          navigate("/tenant/dashboard")
+          break
+        case "agent":
+          navigate("/agent/dashboard")
+          break
+        case "service-provider":
+          navigate("/service-provider/dashboard")
+          break
+        default:
+          navigate("/")
       }
     }
   }, [isAuthenticated, user, navigate])
@@ -165,7 +179,7 @@ const Register: React.FC = () => {
     }
 
     // Validate referral code for landlords
-    if (formData.role === "landlord" && !formData.referralCode.trim()) {
+    if (formData.role === "landlord" && !formData.referralCode?.trim()) {
       newErrors.referralCode = "Referral code is required for landlords"
     }
 
@@ -651,4 +665,4 @@ const Register: React.FC = () => {
   )
 }
 
-export default Register
+export default RegisterPage

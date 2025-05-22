@@ -19,16 +19,13 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react"
-import { useTheme } from "../components/ThemeProvider"
-import { getCurrentUser, logoutUser } from "../services/authService"
+import { useTheme } from "../../../components/ThemeProvider"
+import { useAuth } from "../../../context/AuthContext"
+import { useNavigate } from "react-router-dom"
 
 // Dummy data for the dashboard
-const user=getCurrentUser.name
-
-console.log(getCurrentUser())
-
 const tenantInfo = {
-  name:user,
+  name: "John Doe",
   property: "Apartment 2B, Sunshine Apartments",
   leaseStart: "2023-01-01",
   leaseEnd: "2023-12-31",
@@ -65,8 +62,10 @@ const announcements = [
   },
 ]
 
-const TenantDashboard: React.FC = () => {
+const TenantDashboardPage: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Format currency
@@ -97,6 +96,11 @@ const TenantDashboard: React.FC = () => {
     }
 
     return formatDate(nextPaymentDate.toISOString())
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    navigate("/login")
   }
 
   return (
@@ -156,14 +160,13 @@ const TenantDashboard: React.FC = () => {
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <a
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500"
-              onClick={()=>logoutUser()}
             >
               <LogOut className="w-5 h-5 mr-3" />
               Sign out
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -214,13 +217,13 @@ const TenantDashboard: React.FC = () => {
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <a
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500"
             >
               <LogOut className="w-5 h-5 mr-3" />
               Sign out
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -596,4 +599,4 @@ const TenantDashboard: React.FC = () => {
   )
 }
 
-export default TenantDashboard
+export default TenantDashboardPage

@@ -29,6 +29,7 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 })
+
 // Add request interceptor to add token to requests
 api.interceptors.request.use(
   (config) => {
@@ -47,12 +48,10 @@ export const registerUser = async (userData: RegisterData): Promise<AuthResponse
     const response = await api.post("/auth/register", userData)
     return response.data
   } catch (error: any) {
-     console.log(error)
     return {
       success: false,
-      message: error.response?.data?.message || "Registration failed ",
+      message: error.response?.data?.message || "Registration failed",
     }
-   
   }
 }
 
@@ -111,10 +110,25 @@ export const logoutUser = async (): Promise<AuthResponse> => {
   }
 }
 
+// Get auth headers for API requests
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token")
+  if (token) {
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    }
+  }
+  return {
+    "Content-Type": "application/json",
+  }
+}
+
 export default {
   registerUser,
   loginUser,
   getCurrentUser,
   refreshAuthToken,
   logoutUser,
+  getAuthHeaders,
 }

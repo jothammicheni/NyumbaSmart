@@ -1,66 +1,118 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useState } from "react"
 import {
   Home,
-  Users,
-  Building,
-  CreditCard,
+  PenToolIcon as Tool,
+  DollarSign,
   Settings,
   Bell,
   Search,
   Menu,
   X,
   LogOut,
-  DollarSign,
-  Percent,
-  Calendar,
-  AlertTriangle,
-  Wrench,
+  Briefcase,
+  CheckCircle,
+  Clock,
+  MapPin,
 } from "lucide-react"
-import { useTheme } from "../components/ThemeProvider"
-import { logoutUser } from "../services/authService"
+import { useTheme } from "../../../components/ThemeProvider"
+import { useAuth } from "../../../context/AuthContext"
+import { useNavigate } from "react-router-dom"
 
 // Dummy data for the dashboard
-const propertyStats = {
-  totalProperties: 24,
-  occupiedUnits: 87,
-  vacantUnits: 13,
-  maintenanceRequests: 8,
+const providerInfo = {
+  name: "Tech Solutions Ltd",
+  serviceType: "WiFi Provider",
+  joinDate: "2023-01-15",
+  rating: 4.8,
+  totalJobs: 45,
+  completedJobs: 38,
+  pendingJobs: 7,
+  totalEarnings: 125000,
 }
 
-const financialStats = {
-  totalRevenue: 1250000,
-  paidRent: 950000,
-  pendingRent: 300000,
-  occupancyRate: 87,
-}
-
-const recentActivities = [
-  { id: 1, type: "payment", user: "John Doe", amount: 25000, date: "2023-05-18", status: "completed" },
-  { id: 2, type: "maintenance", user: "Sarah Smith", issue: "Plumbing issue", date: "2023-05-17", status: "pending" },
-  { id: 3, type: "lease", user: "Michael Johnson", property: "Apartment 4B", date: "2023-05-16", status: "completed" },
-  { id: 4, type: "payment", user: "Emily Brown", amount: 30000, date: "2023-05-15", status: "completed" },
+const activeJobs = [
   {
-    id: 5,
-    type: "maintenance",
-    user: "David Wilson",
-    issue: "Electrical issue",
-    date: "2023-05-14",
+    id: 1,
+    client: "Sunshine Apartments",
+    address: "123 Moi Avenue, Nairobi",
+    service: "WiFi Installation",
+    date: "2023-05-20",
+    status: "scheduled",
+    amount: 15000,
+  },
+  {
+    id: 2,
+    client: "Green Valley Residences",
+    address: "456 Kenyatta Road, Nairobi",
+    service: "Network Troubleshooting",
+    date: "2023-05-18",
     status: "in-progress",
+    amount: 5000,
+  },
+  {
+    id: 3,
+    client: "Riverside Homes",
+    address: "789 Uhuru Highway, Nairobi",
+    service: "WiFi Upgrade",
+    date: "2023-05-25",
+    status: "scheduled",
+    amount: 12000,
   },
 ]
 
-const upcomingPayments = [
-  { id: 1, tenant: "Alice Johnson", property: "Apartment 2A", amount: 25000, dueDate: "2023-05-25" },
-  { id: 2, tenant: "Robert Smith", property: "Apartment 3C", amount: 30000, dueDate: "2023-05-26" },
-  { id: 3, tenant: "Mary Davis", property: "Apartment 1B", amount: 22000, dueDate: "2023-05-28" },
-  { id: 4, tenant: "James Wilson", property: "Apartment 5D", amount: 28000, dueDate: "2023-05-30" },
+const completedJobs = [
+  {
+    id: 1,
+    client: "Mountain View Apartments",
+    address: "321 Mombasa Road, Nairobi",
+    service: "WiFi Installation",
+    date: "2023-05-10",
+    amount: 15000,
+  },
+  {
+    id: 2,
+    client: "Serene Gardens",
+    address: "654 Ngong Road, Nairobi",
+    service: "Router Replacement",
+    date: "2023-05-05",
+    amount: 8000,
+  },
+  {
+    id: 3,
+    client: "Urban Heights",
+    address: "987 Thika Road, Nairobi",
+    service: "Network Setup",
+    date: "2023-04-28",
+    amount: 20000,
+  },
 ]
 
-const AdminDashboard: React.FC = () => {
+const clientReviews = [
+  {
+    id: 1,
+    client: "John Doe",
+    property: "Sunshine Apartments",
+    rating: 5,
+    comment: "Excellent service! Fast and professional installation.",
+    date: "2023-05-12",
+  },
+  {
+    id: 2,
+    client: "Mary Smith",
+    property: "Green Valley Residences",
+    rating: 4,
+    comment: "Good service, but took a bit longer than expected.",
+    date: "2023-04-20",
+  },
+]
+
+const ServiceProviderDashboard: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Format currency
@@ -70,6 +122,41 @@ const AdminDashboard: React.FC = () => {
       currency: "KES",
       minimumFractionDigits: 0,
     }).format(amount)
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  // Render stars for rating
+  const renderStars = (rating: number) => {
+    const stars = []
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        stars.push(
+          <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>,
+        )
+      } else {
+        stars.push(
+          <svg key={i} className="w-5 h-5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>,
+        )
+      }
+    }
+    return stars
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    navigate("/login")
   }
 
   return (
@@ -102,22 +189,15 @@ const AdminDashboard: React.FC = () => {
                 href="#"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <Building className="w-5 h-5 mr-3" />
-                Properties
+                <Briefcase className="w-5 h-5 mr-3" />
+                Jobs
               </a>
               <a
                 href="#"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <Users className="w-5 h-5 mr-3" />
-                Tenants
-              </a>
-              <a
-                href="#"
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-              >
-                <CreditCard className="w-5 h-5 mr-3" />
-                Payments
+                <DollarSign className="w-5 h-5 mr-3" />
+                Earnings
               </a>
               <a
                 href="#"
@@ -129,13 +209,13 @@ const AdminDashboard: React.FC = () => {
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <a
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500"
             >
               <LogOut className="w-5 h-5 mr-3" />
               Sign out
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -159,22 +239,15 @@ const AdminDashboard: React.FC = () => {
                 href="#"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <Building className="w-5 h-5 mr-3" />
-                Properties
+                <Briefcase className="w-5 h-5 mr-3" />
+                Jobs
               </a>
               <a
                 href="#"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               >
-                <Users className="w-5 h-5 mr-3" />
-                Tenants
-              </a>
-              <a
-                href="#"
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-              >
-                <CreditCard className="w-5 h-5 mr-3" />
-                Payments
+                <DollarSign className="w-5 h-5 mr-3" />
+                Earnings
               </a>
               <a
                 href="#"
@@ -186,13 +259,13 @@ const AdminDashboard: React.FC = () => {
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <a
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500"
             >
-              <LogOut className="w-5 h-5 mr-3" onClick={()=>logoutUser()} />
+              <LogOut className="w-5 h-5 mr-3" />
               Sign out
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -281,7 +354,7 @@ const AdminDashboard: React.FC = () => {
                     <span className="sr-only">Open user menu</span>
                     <img
                       className="h-8 w-8 rounded-full"
-                      src="https://randomuser.me/api/portraits/men/1.jpg"
+                      src="https://randomuser.me/api/portraits/men/42.jpg"
                       alt="User profile"
                     />
                   </button>
@@ -298,21 +371,17 @@ const AdminDashboard: React.FC = () => {
               <div className="py-6 md:flex md:items-center md:justify-between">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
-                    Admin Dashboard
+                    Welcome, {providerInfo.name}
                   </h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{providerInfo.serviceType} Dashboard</p>
                 </div>
                 <div className="mt-4 flex md:mt-0 md:ml-4">
                   <button
                     type="button"
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    Export
-                  </button>
-                  <button
-                    type="button"
                     className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                   >
-                    Add Property
+                    <Tool className="h-4 w-4 mr-2" />
+                    Update Availability
                   </button>
                 </div>
               </div>
@@ -322,23 +391,20 @@ const AdminDashboard: React.FC = () => {
           <div className="mt-8">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               {/* Stats cards */}
-              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Property Overview</h3>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Card 1 */}
                 <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <Building className="h-6 w-6 text-gray-400" />
+                        <Briefcase className="h-6 w-6 text-primary-500" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
-                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Total Properties
-                          </dt>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Jobs</dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {propertyStats.totalProperties}
+                              {providerInfo.totalJobs}
                             </div>
                           </dd>
                         </dl>
@@ -352,16 +418,16 @@ const AdminDashboard: React.FC = () => {
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <Users className="h-6 w-6 text-gray-400" />
+                        <CheckCircle className="h-6 w-6 text-primary-500" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Occupied Units
+                            Completed Jobs
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {propertyStats.occupiedUnits}%
+                              {providerInfo.completedJobs}
                             </div>
                           </dd>
                         </dl>
@@ -375,16 +441,16 @@ const AdminDashboard: React.FC = () => {
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <Home className="h-6 w-6 text-gray-400" />
+                        <Clock className="h-6 w-6 text-primary-500" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Vacant Units
+                            Pending Jobs
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {propertyStats.vacantUnits}%
+                              {providerInfo.pendingJobs}
                             </div>
                           </dd>
                         </dl>
@@ -398,16 +464,16 @@ const AdminDashboard: React.FC = () => {
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <AlertTriangle className="h-6 w-6 text-gray-400" />
+                        <DollarSign className="h-6 w-6 text-primary-500" />
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
                           <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Maintenance Requests
+                            Total Earnings
                           </dt>
                           <dd>
                             <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {propertyStats.maintenanceRequests}
+                              {formatCurrency(providerInfo.totalEarnings)}
                             </div>
                           </dd>
                         </dl>
@@ -417,199 +483,143 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Financial stats */}
-              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-8 mb-4">
-                Financial Overview
-              </h3>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {/* Card 1 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <DollarSign className="h-6 w-6 text-gray-400" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Total Revenue
-                          </dt>
-                          <dd>
-                            <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {formatCurrency(financialStats.totalRevenue)}
-                            </div>
-                          </dd>
-                        </dl>
+              {/* Provider Profile Card */}
+              <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg">
+                <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Provider Profile</h3>
+                </div>
+                <div className="px-4 py-5 sm:p-6">
+                  <div className="flex flex-col md:flex-row md:items-center">
+                    <div className="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                      <div className="h-24 w-24 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                        <Tool className="h-12 w-12 text-primary-600 dark:text-primary-400" />
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Card 2 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <CreditCard className="h-6 w-6 text-gray-400" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Paid Rent</dt>
-                          <dd>
-                            <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {formatCurrency(financialStats.paidRent)}
-                            </div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card 3 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <AlertTriangle className="h-6 w-6 text-gray-400" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Pending Rent
-                          </dt>
-                          <dd>
-                            <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {formatCurrency(financialStats.pendingRent)}
-                            </div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card 4 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <Percent className="h-6 w-6 text-gray-400" />
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                            Occupancy Rate
-                          </dt>
-                          <dd>
-                            <div className="text-lg font-medium text-gray-900 dark:text-white">
-                              {financialStats.occupancyRate}%
-                            </div>
-                          </dd>
-                        </dl>
+                    <div className="flex-1">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Service Type</p>
+                          <p className="mt-1 text-sm text-gray-900 dark:text-white">{providerInfo.serviceType}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Member Since</p>
+                          <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {formatDate(providerInfo.joinDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rating</p>
+                          <div className="mt-1 flex items-center">
+                            {renderStars(providerInfo.rating)}
+                            <span className="ml-2 text-sm text-gray-900 dark:text-white">{providerInfo.rating}/5</span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completion Rate</p>
+                          <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {Math.round((providerInfo.completedJobs / providerInfo.totalJobs) * 100)}%
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Recent Activity and Upcoming Payments */}
-              <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-                {/* Recent Activity */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Recent Activity</h3>
-                  </div>
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="flow-root">
-                      <ul className="-my-5 divide-y divide-gray-200 dark:divide-gray-700">
-                        {recentActivities.map((activity) => (
-                          <li key={activity.id} className="py-4">
-                            <div className="flex items-center space-x-4">
-                              <div className="flex-shrink-0">
-                                {activity.type === "payment" ? (
-                                  <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                                    <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                  </div>
-                                ) : activity.type === "maintenance" ? (
-                                  <div className="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
-                                    <Wrench className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                                  </div>
-                                ) : (
-                                  <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                                    <Home className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {activity.user}
+              {/* Active Jobs */}
+              <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg">
+                <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Active Jobs</h3>
+                  <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-500">
+                    View all
+                  </a>
+                </div>
+                <div className="px-4 py-5 sm:p-6">
+                  <div className="flow-root">
+                    <ul className="-my-5 divide-y divide-gray-200 dark:divide-gray-700">
+                      {activeJobs.map((job) => (
+                        <li key={job.id} className="py-5">
+                          <div className="flex flex-col md:flex-row md:items-center">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center mb-1">
+                                <p className="text-lg font-medium text-gray-900 dark:text-white truncate">
+                                  {job.service}
                                 </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                                  {activity.type === "payment"
-                                    ? `Paid ${formatCurrency(activity.amount??0)}`
-                                    : activity.type === "maintenance"
-                                      ? `Reported: ${activity.issue}`
-                                      : `New lease: ${activity.property}`}
-                                </p>
-                              </div>
-                              <div>
-                                <div
-                                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                  ${activity.status === 'completed' 
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
-                                    : activity.status === 'pending' 
-                                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' 
-                                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                                  }"
+                                <span
+                                  className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                  ${
+                                    job.status === "scheduled"
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                  }`}
                                 >
-                                  {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
-                                </div>
+                                  {job.status === "scheduled" ? "Scheduled" : "In Progress"}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-900 dark:text-white mb-1">
+                                <span className="font-medium">Client:</span> {job.client}
+                              </p>
+                              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                <MapPin className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                {job.address}
                               </div>
                             </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="mt-6">
-                      <a
-                        href="#"
-                        className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                      >
-                        View all
-                      </a>
-                    </div>
+                            <div className="mt-4 md:mt-0 md:ml-6 flex flex-col items-end">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                {formatCurrency(job.amount)}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(job.date)}</p>
+                              <div className="mt-2">
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                                >
+                                  {job.status === "scheduled" ? "Start Job" : "Complete Job"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
+              </div>
 
-                {/* Upcoming Payments */}
+              {/* Recent Completed Jobs and Client Reviews */}
+              <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+                {/* Recent Completed Jobs */}
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Upcoming Payments</h3>
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                      Recent Completed Jobs
+                    </h3>
+                    <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-500">
+                      View all
+                    </a>
                   </div>
                   <div className="px-4 py-5 sm:p-6">
                     <div className="flow-root">
                       <ul className="-my-5 divide-y divide-gray-200 dark:divide-gray-700">
-                        {upcomingPayments.map((payment) => (
-                          <li key={payment.id} className="py-4">
+                        {completedJobs.map((job) => (
+                          <li key={job.id} className="py-4">
                             <div className="flex items-center space-x-4">
                               <div className="flex-shrink-0">
-                                <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-                                  <Calendar className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                                <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                                 </div>
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {payment.tenant}
+                                  {job.service}
                                 </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{payment.property}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {job.client} - {formatDate(job.date)}
+                                </p>
                               </div>
                               <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {formatCurrency(payment.amount)}
-                                </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                  Due: {new Date(payment.dueDate).toLocaleDateString()}
+                                  {formatCurrency(job.amount)}
                                 </p>
                               </div>
                             </div>
@@ -617,13 +627,43 @@ const AdminDashboard: React.FC = () => {
                         ))}
                       </ul>
                     </div>
-                    <div className="mt-6">
-                      <a
-                        href="#"
-                        className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                      >
-                        View all
-                      </a>
+                  </div>
+                </div>
+
+                {/* Client Reviews */}
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Client Reviews</h3>
+                    <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-500">
+                      View all
+                    </a>
+                  </div>
+                  <div className="px-4 py-5 sm:p-6">
+                    <div className="flow-root">
+                      <ul className="-my-5 divide-y divide-gray-200 dark:divide-gray-700">
+                        {clientReviews.map((review) => (
+                          <li key={review.id} className="py-4">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex-shrink-0">
+                                <div className="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                                  {renderStars(review.rating).map((star, index) => (
+                                    <React.Fragment key={index}>{star}</React.Fragment>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {review.client} - {review.property}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{review.comment}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(review.date)}</p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -636,4 +676,4 @@ const AdminDashboard: React.FC = () => {
   )
 }
 
-export default AdminDashboard
+export default ServiceProviderDashboard

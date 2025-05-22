@@ -12,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ includeNavbar = true, includeFooter = t
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {includeNavbar && <Navbar />}
-      <main className="flex-grow">
+      <main className={`flex-grow ${includeNavbar ? "pt-16" : ""}`}>
         <Outlet />
       </main>
       {includeFooter && <Footer />}
